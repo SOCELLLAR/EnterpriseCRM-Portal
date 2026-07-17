@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise CRM Portal</title>
+    
+    <!-- Fonts: Noto Sans Thai -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* CSS Variables */
+        :root {
+            --color-brand: 16 185 129; 
+            --color-brand-hover: 5 150 105; 
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* CSS Tooltip */
+        .css-tooltip { position: relative; display: inline-block; cursor: pointer; }
+        .css-tooltip .tooltip-text {
+            visibility: hidden; width: max-content; max-width: 300px;
+            background-color: #1e293b; color: #fff; text-align: left;
+            border-radius: 8px; padding: 10px 14px; position: absolute;
+            z-index: 50; bottom: 125%; left: 50%; transform: translateX(-50%);
+            opacity: 0; transition: opacity 0.3s; font-size: 0.875rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .light .css-tooltip .tooltip-text { background-color: #334155; }
+        .css-tooltip .tooltip-text::after {
+            content: ""; position: absolute; top: 100%; left: 50%;
+            margin-left: -5px; border-width: 5px; border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+        .light .css-tooltip .tooltip-text::after { border-color: #334155 transparent transparent transparent; }
+        .css-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+        /* Loader */
+        .loader {
+            border: 4px solid rgba(255,255,255,0.1); border-left-color: rgb(var(--color-brand));
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Checkbox Cards */
+        .checkbox-card-input:checked + label {
+            border-color: rgb(var(--color-brand)); background-color: rgba(var(--color-brand), 0.1); color: rgb(var(--color-brand));
+            box-shadow: 0 0 0 2px rgba(var(--color-brand), 0.2);
+        }
+        
+        /* Table row hover */
+        .table-row:hover { background-color: rgba(255,255,255,0.02); }
+        .light .table-row:hover { background-color: rgba(0,0,0,0.02); }
+
+        /* Custom Input Styling (Form Redesign) */
+        .input-premium {
+            width: 100%;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            color: #0f172a;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .dark .input-premium {
+            background-color: #1A2235;
+            border-color: #334155;
+            color: #f1f5f9;
+            box-shadow: inset 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+        }
+        .input-premium:focus {
+            outline: none;
+            border-color: rgb(var(--color-brand));
+            box-shadow: 0 0 0 4px rgba(var(--color-brand), 0.15);
+        }
+
+        /* Input with icon left */
+        .input-premium-icon { padding-left: 2.5rem; }
+        .icon-wrapper { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; }
+        .dark .icon-wrapper { color: #64748b; }
+        
+        /* Blinking Animation */
+        .animate-blink { animation: blink-soft 2s infinite; }
+        @keyframes blink-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen pb-20 font-sans">
+
+    <!-- Global Loading Spinner -->
+    <div id="loadingOverlay" class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center hidden">
+        <div class="flex flex-col items-center">
+            <div class="loader mb-4"></div>
+            <p class="text-white font-medium">กำลังประมวลผลข้อมูล...</p>
+        </div>
+    </div>
+
+    <!-- 1. Top Navigation Bar -->
+    <nav class="sticky top-0 z-40 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-md transition-all duration-300">
+        <div class="px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-brand-hover flex items-center justify-center shadow-lg shadow-brand/20">
+                    <i data-lucide="building-2" class="text-white w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold leading-tight tracking-tight text-slate-800 dark:text-white transition-colors">Enterprise CRM Portal</h1>
+                    <span id="mockModeBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 border border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/30 transition-colors">Mock Mode</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Theme Palette Selector -->
+                <div class="relative group">
+                    <button class="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/10 transition-colors" title="เปลี่ยนสีธีม">
+                        <i data-lucide="palette" class="w-5 h-5"></i>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-56 bg-white dark:bg-[#121826] rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-4 hidden group-hover:block z-50 transition-all">
+                        <p class="text-[11px] font-bold text-slate-400 dark:text-slate-500 mb-3 uppercase tracking-wider text-center">สไตล์สีระบบหลัก</p>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button onclick="changeThemeColor('emerald')" class="w-8 h-8 rounded-full bg-[#10B981] border border-slate-200 dark:border-white/10 hover:scale-110 transition-transform shadow-sm"></button>
+                            <button onclick="changeThemeColor('blue')" class="w-8 h-8 rounded-full bg-[#3B82F6] border border-slate-200 dark:border-white/10 hover:scale-110 transition-transform shadow-sm"></button>
+                            <button onclick="changeThemeColor('purple')" class="w-8 h-8 rounded-full bg-[#8B5CF6] border border-slate-200 dark:border-white/10 hover:scale-110 transition-transform shadow-sm"></button>
+                            <button onclick="changeThemeColor('rose')" class="w-8 h-8 rounded-full bg-[#F43F5E] border border-slate-200 dark:border-white/10 hover:scale-110 transition-transform shadow-sm"></button>
+                            <button onclick="changeThemeColor('orange')" class="w-8 h-8 rounded-full bg-[#F97316] border border-slate-200 dark:border-white/10 hover:scale-110 transition-transform shadow-sm"></button>
+                            <button onclick="changeThemeColor('slate')" class="w-8 h-8 rounded-full bg-[#64748B] border border-slate-200 dark:border-white/10 hover:scale-110 transition-transform shadow-sm"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dark/Light Toggle -->
+                <button id="themeToggle" class="p-2 rounded-full text-amber-500 hover:bg-slate-100 dark:text-yellow-300 dark:hover:bg-white/10 transition-colors" title="สลับโหมดสว่าง/มืด">
+                    <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+                </button>
+
+                <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 transition-colors"></div>
+
+                <!-- Admin Profile -->
+                <button onclick="openProfileModal()" class="flex items-center gap-3 hover:opacity-80 transition">
+                    <div class="relative">
+                        <img id="profileImage" src="" alt="Profile" class="w-9 h-9 rounded-full object-cover shadow-sm hidden border border-slate-200 dark:border-slate-700">
+                        <div id="profileAvatar" class="w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm shadow-sm border border-transparent dark:border-slate-700">
+                            AD
+                        </div>
+                    </div>
+                    <div class="hidden md:block text-left">
+                        <p id="profileName" class="text-sm font-semibold leading-none text-slate-800 dark:text-white transition-colors">Admin</p>
+                        <p id="profileRole" class="text-xs text-slate-500 dark:text-slate-400 mt-1 transition-colors">Super User</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 2. Sub-Navigation (Tabs) -->
+    <div class="sticky top-16 z-30 bg-slate-50/95 dark:bg-[#090D16]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+        <div class="px-6 flex gap-6 overflow-x-auto no-scrollbar">
+            <button onclick="switchTab('tab-crm')" id="btn-tab-crm" class="tab-btn py-4 text-sm font-semibold border-b-2 border-brand text-brand whitespace-nowrap transition-colors flex items-center gap-2">
+                <i data-lucide="activity" class="w-4 h-4"></i> ประวัติการติดต่อ
+            </button>
+            <button onclick="switchTab('tab-followup')" id="btn-tab-followup" class="tab-btn py-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white whitespace-nowrap transition-colors flex items-center gap-2 relative">
+                <i data-lucide="bell-ring" class="w-4 h-4"></i> ติดตามงานด่วน
+                <span id="badgeFollowUpCount" class="hidden absolute top-3 -right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            </button>
+            <button onclick="switchTab('tab-customer')" id="btn-tab-customer" class="tab-btn py-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white whitespace-nowrap transition-colors flex items-center gap-2">
+                <i data-lucide="users" class="w-4 h-4"></i> ฐานข้อมูลลูกค้า
+            </button>
+            <button onclick="switchTab('tab-form')" id="btn-tab-form" class="tab-btn py-4 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-white whitespace-nowrap transition-colors flex items-center gap-2">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> บันทึกประวัติใหม่
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="p-6 max-w-[1920px] mx-auto">
+
+        <!-- ========================================= -->
+        <!-- MODULE 1: CRM HISTORY & EXECUTIVE SUMMARY -->
+        <!-- ========================================= -->
+        <div id="tab-crm" class="view-module block">
+            <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold flex items-center gap-2 text-slate-800 dark:text-white">
+                        <i data-lucide="line-chart" class="text-brand"></i> แดชบอร์ดสรุปผลประวัติการติดต่อ
+                    </h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">ข้อมูลเชิงสถิติจากการติดต่อประสานงานทั้งหมดในระบบ</p>
+                </div>
+            </div>
+
+            <!-- KPI Dashboard -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-6">
+                <!-- KPI 1 -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-brand/40 transition-all duration-300 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-slate-100 dark:bg-white/5">
+                            <i data-lucide="layers" class="w-5 h-5 text-slate-500 dark:text-slate-400"></i>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] rounded-full bg-slate-100 dark:bg-white/5 text-slate-500 font-semibold">ข้อมูลรวม</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">รายการติดต่อทั้งหมด</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiTotal" class="text-3xl font-bold font-inter text-slate-800 dark:text-white">0</p>
+                        <span class="text-xs text-slate-400">รายการ</span>
+                    </div>
+                    <i data-lucide="layers" class="absolute -right-6 -bottom-6 w-24 h-24 text-slate-500/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"></i>
+                </div>
+                <!-- KPI 2 -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-blue-500/40 transition-all duration-300 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-blue-500/10">
+                            <i data-lucide="user-plus" class="w-5 h-5 text-blue-500"></i>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] rounded-full bg-blue-500/10 text-blue-500 font-semibold">ติดต่อแรกเริ่ม</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">ติดต่อครั้งแรก</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiFirst" class="text-3xl font-bold font-inter text-blue-500">0</p>
+                        <span class="text-xs text-slate-400">ครั้ง</span>
+                    </div>
+                    <i data-lucide="user-plus" class="absolute -right-6 -bottom-6 w-24 h-24 text-blue-500/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"></i>
+                </div>
+                <!-- KPI 3 -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-orange-500/40 transition-all duration-300 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-orange-500/10">
+                            <i data-lucide="messages-square" class="w-5 h-5 text-orange-500"></i>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] rounded-full bg-orange-500/10 text-orange-500 font-semibold">การเจรจา</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">รอตัดสินใจ / กำลังเจรจา</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiNego" class="text-3xl font-bold font-inter text-orange-500">0</p>
+                        <span class="text-xs text-slate-400">ราย</span>
+                    </div>
+                    <i data-lucide="messages-square" class="absolute -right-6 -bottom-6 w-24 h-24 text-orange-500/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"></i>
+                </div>
+                <!-- KPI 4 -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-brand/40 transition-all duration-300 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-emerald-500/10">
+                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] rounded-full bg-emerald-500/10 text-emerald-500 font-semibold">สำเร็จ</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">ปิดการขายสำเร็จ</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiClosed" class="text-3xl font-bold font-inter text-brand">0</p>
+                        <span class="text-xs text-slate-400 font-inter">Success</span>
+                    </div>
+                    <i data-lucide="check-circle-2" class="absolute -right-6 -bottom-6 w-24 h-24 text-brand/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"></i>
+                </div>
+            </div>
+
+            <!-- Table Control Bar -->
+            <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 mb-6 flex flex-col md:flex-row gap-4 shadow-sm">
+                <div class="flex-1 relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" id="crmSearch" placeholder="ค้นหาจาก ชื่อลูกค้า หรือ รายละเอียดการติดต่อ..." class="w-full bg-slate-50 dark:bg-[#1A2235] border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all duration-300" autocomplete="off">
+                </div>
+                <select id="crmStatusFilter" class="bg-slate-50 dark:bg-[#1A2235] text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 text-sm transition-all duration-300 font-medium">
+                    <option value="">กรองตามสถานะ (ทั้งหมด)</option>
+                    <option value="ติดต่อครั้งแรก">ติดต่อครั้งแรก</option>
+                    <option value="รอตัดสินใจ">รอตัดสินใจ</option>
+                    <option value="กำลังเจรจา">กำลังเจรจา</option>
+                    <option value="ปิดการขาย">ปิดการขาย</option>
+                    <option value="ปฏิเสธข้อเสนอ">ปฏิเสธข้อเสนอ</option>
+                </select>
+            </div>
+
+            <!-- Data Table CRM -->
+            <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-md">
+                <div class="overflow-x-auto relative">
+                    <table class="w-full min-w-[1500px] text-left text-sm">
+                        <thead class="bg-slate-50 dark:bg-[#1A2235] border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 select-none">
+                            <tr>
+                                <th class="p-4 font-semibold w-32 whitespace-nowrap">วันที่ติดต่อ</th>
+                                <th class="p-4 font-semibold w-56 whitespace-nowrap">ชื่อลูกค้า / บริษัท</th>
+                                <th class="p-4 font-semibold w-64 whitespace-nowrap">ช่องทาง & ข้อมูลติดต่อ</th>
+                                <th class="p-4 font-semibold min-w-[350px]">รายละเอียดการติดต่อ <br><span class="text-[10px] font-normal text-orange-500">(ไฮไลต์หากคุยสาย >60 นาที)</span></th>
+                                <th class="p-4 font-semibold w-64">สถานะ & เอกสาร</th>
+                                <th class="p-4 font-semibold min-w-[200px]">สาเหตุ/หมายเหตุ</th>
+                                <th class="p-4 font-semibold w-28 whitespace-nowrap sticky right-0 bg-slate-50 dark:bg-[#1A2235] border-l border-slate-200 dark:border-slate-700 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.1)] z-10 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crmTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                            <!-- JS Renders Here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-[#1A2235]">
+                    <span id="crmPageInfo" class="text-sm text-slate-500 dark:text-slate-400 font-medium">แสดง 1-10 จาก 0</span>
+                    <div class="flex gap-1" id="crmPagination"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================= -->
+        <!-- MODULE 4: FOLLOW-UP TRACKER               -->
+        <!-- ========================================= -->
+        <div id="tab-followup" class="view-module hidden">
+            <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold flex items-center gap-2 text-slate-800 dark:text-white">
+                        <i data-lucide="bell-ring" class="text-rose-500"></i> ผู้ช่วยติดตามงาน (Follow-up Tracker)
+                    </h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">คัดกรองเฉพาะลูกค้าที่ต้องได้รับการดูแลด่วน จัดเรียงความสำคัญอัตโนมัติ</p>
+                </div>
+            </div>
+
+            <!-- Follow Up KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+                <!-- Total Action Needed -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-blue-500/40 transition-all duration-300 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-blue-500/10">
+                            <i data-lucide="list-todo" class="w-5 h-5 text-blue-500"></i>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] rounded-full bg-blue-500/10 text-blue-500 font-semibold">รอติดตาม</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">งานที่ต้องติดตาม (ทั้งหมด)</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiFuTotal" class="text-3xl font-bold font-inter text-slate-800 dark:text-white">0</p>
+                        <span class="text-xs text-slate-400">รายการ</span>
+                    </div>
+                    <i data-lucide="list-todo" class="absolute -right-4 -bottom-4 w-28 h-28 text-blue-500/5 group-hover:scale-110 transition-all"></i>
+                </div>
+                <!-- Overdue -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-rose-500/40 transition-all duration-300 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-rose-500/10">
+                            <i data-lucide="calendar-x" class="w-5 h-5 text-rose-500"></i>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] rounded-full bg-rose-500/10 text-rose-500 font-semibold">ด่วน!</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">เลยกำหนดนัดหมาย (Overdue)</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiFuOverdue" class="text-3xl font-bold font-inter text-rose-500">0</p>
+                        <span class="text-xs text-slate-400">รายการ</span>
+                    </div>
+                    <i data-lucide="calendar-x" class="absolute -right-4 -bottom-4 w-28 h-28 text-rose-500/5 group-hover:scale-110 transition-all"></i>
+                </div>
+                <!-- Aging Docs -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-orange-500/40 transition-all duration-300 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-orange-500/10">
+                            <i data-lucide="file-clock" class="w-5 h-5 text-orange-500"></i>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] rounded-full bg-orange-500/10 text-orange-500 font-semibold">> 5 วัน</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">เอกสารค้างพิจารณา</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiFuAging" class="text-3xl font-bold font-inter text-orange-500">0</p>
+                        <span class="text-xs text-slate-400">รายการ</span>
+                    </div>
+                    <i data-lucide="file-clock" class="absolute -right-4 -bottom-4 w-28 h-28 text-orange-500/5 group-hover:scale-110 transition-all"></i>
+                </div>
+                <!-- Silent -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-slate-500/40 transition-all duration-300 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-slate-500/10">
+                            <i data-lucide="user-minus" class="w-5 h-5 text-slate-500 dark:text-slate-400"></i>
+                        </div>
+                        <span class="px-2 py-0.5 text-[10px] rounded-full bg-slate-500/10 text-slate-600 dark:text-slate-400 font-semibold">> 7 วัน</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">ลูกค้าเงียบหาย (ไร้นัด)</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiFuSilent" class="text-3xl font-bold font-inter text-slate-700 dark:text-slate-300">0</p>
+                        <span class="text-xs text-slate-400">รายการ</span>
+                    </div>
+                    <i data-lucide="user-minus" class="absolute -right-4 -bottom-4 w-28 h-28 text-slate-500/5 group-hover:scale-110 transition-all"></i>
+                </div>
+            </div>
+
+            <!-- Follow-up Table -->
+            <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-md">
+                <div class="p-4 bg-slate-50 dark:bg-[#1A2235] border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <i data-lucide="arrow-down-wide-narrow" class="w-4 h-4 text-brand"></i> รายการจัดลำดับความสำคัญสูง (Urgency Sort)
+                    </h3>
+                </div>
+                <div class="overflow-x-auto relative">
+                    <table class="w-full min-w-[1200px] text-left text-sm">
+                        <thead class="bg-slate-50 dark:bg-[#1A2235] border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 select-none">
+                            <tr>
+                                <th class="p-4 font-semibold w-48">สิ่งที่ต้องดำเนินการ (Action)</th>
+                                <th class="p-4 font-semibold w-56 whitespace-nowrap">ชื่อลูกค้า / บริษัท</th>
+                                <th class="p-4 font-semibold w-40 whitespace-nowrap">ติดต่อล่าสุด</th>
+                                <th class="p-4 font-semibold min-w-[250px]">รายละเอียด/สถานะ</th>
+                                <th class="p-4 font-semibold w-48">ข้อมูลติดต่ออ้างอิง</th>
+                                <th class="p-4 font-semibold w-28 whitespace-nowrap sticky right-0 bg-slate-50 dark:bg-[#1A2235] border-l border-slate-200 dark:border-slate-700 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.1)] z-10 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="followupTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                            <!-- JS Renders Here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-[#1A2235]">
+                    <span id="followupPageInfo" class="text-sm text-slate-500 dark:text-slate-400 font-medium">แสดง 1-10 จาก 0</span>
+                    <div class="flex gap-1" id="followupPagination"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================= -->
+        <!-- MODULE 2: CUSTOMER DATABASE               -->
+        <!-- ========================================= -->
+        <div id="tab-customer" class="view-module hidden">
+            <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold flex items-center gap-2 text-slate-800 dark:text-white">
+                        <i data-lucide="database" class="text-blue-500"></i> ทะเบียนประวัติฐานข้อมูลลูกค้า
+                    </h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">รายชื่อบริษัทและช่องทางการติดต่อจดทะเบียนจดสิทธิบัตรระบบ</p>
+                </div>
+                <button onclick="openCustomerModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-lg shadow-blue-600/20 transition flex items-center gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> เพิ่มข้อมูลบริษัท/ลูกค้า
+                </button>
+            </div>
+
+            <!-- KPI Dashboard ลูกค้า -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                <!-- Cust KPI 1 -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-blue-500/40 transition-all shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-slate-100 dark:bg-white/5">
+                            <i data-lucide="users" class="w-5 h-5 text-slate-500 dark:text-slate-400"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">ลูกค้าทั้งหมด</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiCustTotal" class="text-2xl lg:text-3xl font-bold font-inter text-slate-800 dark:text-white">0</p>
+                    </div>
+                    <i data-lucide="users" class="absolute -right-6 -bottom-6 w-24 h-24 text-slate-500/5 group-hover:scale-110 transition-all"></i>
+                </div>
+                <!-- Cust KPI 2 -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-blue-500/40 transition-all shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-blue-500/10">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-blue-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">ลูกค้าใหม่</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiCustNew" class="text-2xl lg:text-3xl font-bold font-inter text-blue-500">0</p>
+                    </div>
+                    <i data-lucide="sparkles" class="absolute -right-6 -bottom-6 w-24 h-24 text-blue-500/5 group-hover:scale-110 transition-all"></i>
+                </div>
+                <!-- Cust KPI 3 -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-orange-500/40 transition-all shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-orange-500/10">
+                            <i data-lucide="briefcase" class="w-5 h-5 text-orange-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">กำลังเจรจา</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiCustNego" class="text-2xl lg:text-3xl font-bold font-inter text-orange-500">0</p>
+                    </div>
+                    <i data-lucide="briefcase" class="absolute -right-6 -bottom-6 w-24 h-24 text-orange-500/5 group-hover:scale-110 transition-all"></i>
+                </div>
+                <!-- Cust KPI 4 -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-emerald-500/40 transition-all shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-emerald-500/10">
+                            <i data-lucide="check-square" class="w-5 h-5 text-emerald-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">ติดต่อแล้ว</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiCustContacted" class="text-2xl lg:text-3xl font-bold font-inter text-emerald-500">0</p>
+                    </div>
+                    <i data-lucide="check-square" class="absolute -right-6 -bottom-6 w-24 h-24 text-emerald-500/5 group-hover:scale-110 transition-all"></i>
+                </div>
+                <!-- Cust KPI 5 -->
+                <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-purple-500/40 transition-all shadow-sm">
+                    <div class="flex items-center justify-between mb-3 relative z-10">
+                        <div class="p-2 rounded-xl bg-purple-500/10">
+                            <i data-lucide="gem" class="w-5 h-5 text-purple-500"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium relative z-10">ลูกค้าเก่า</p>
+                    <div class="flex items-baseline gap-2 mt-1 relative z-10">
+                        <p id="kpiCustOld" class="text-2xl lg:text-3xl font-bold font-inter text-purple-500">0</p>
+                    </div>
+                    <i data-lucide="gem" class="absolute -right-6 -bottom-6 w-24 h-24 text-purple-500/5 group-hover:scale-110 transition-all"></i>
+                </div>
+            </div>
+
+            <!-- Filters ฐานข้อมูลลูกค้า -->
+            <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 mb-6 flex flex-col md:flex-row gap-4 shadow-sm">
+                <div class="flex-1 relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" id="custSearch" placeholder="ค้นหาชื่อบริษัท หรือผู้ติดต่อ..." class="w-full bg-slate-50 dark:bg-[#1A2235] text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300" autocomplete="off">
+                </div>
+                <select id="custBizFilter" class="bg-slate-50 dark:bg-[#1A2235] text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm font-medium">
+                    <option value="">ทุกประเภทธุรกิจ</option>
+                </select>
+                <select id="custStatusFilter" class="bg-slate-50 dark:bg-[#1A2235] text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm font-medium">
+                    <option value="">ทุกสถานะลูกค้า</option>
+                    <option value="ลูกค้าใหม่">ลูกค้าใหม่</option>
+                    <option value="กำลังเจรจา">กำลังเจรจา</option>
+                    <option value="ติดต่อแล้ว">ติดต่อแล้ว</option>
+                    <option value="ลูกค้าเก่า">ลูกค้าเก่า</option>
+                </select>
+            </div>
+
+            <!-- Table ฐานข้อมูลลูกค้า -->
+            <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-md">
+                <div class="overflow-x-auto relative">
+                    <table class="w-full min-w-[1300px] text-left text-sm">
+                        <thead class="bg-slate-50 dark:bg-[#1A2235] border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 select-none">
+                            <tr>
+                                <th class="p-4 font-semibold w-16">ลำดับ</th>
+                                <th class="p-4 font-semibold w-64 cursor-pointer hover:bg-slate-200 dark:hover:bg-white/5 transition group" onclick="sortCust('company')">
+                                    <div class="flex items-center gap-1">ชื่อบริษัท <i data-lucide="chevrons-up-down" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500" id="sort-icon-company"></i></div>
+                                </th>
+                                <th class="p-4 font-semibold w-48 cursor-pointer hover:bg-slate-200 dark:hover:bg-white/5 transition group" onclick="sortCust('contact')">
+                                    <div class="flex items-center gap-1">ชื่อผู้ติดต่อ <i data-lucide="chevrons-up-down" class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500" id="sort-icon-contact"></i></div>
+                                </th>
+                                <th class="p-4 font-semibold w-64">ข้อมูลติดต่อ</th>
+                                <th class="p-4 font-semibold min-w-[250px]">ที่อยู่จดทะเบียน</th>
+                                <th class="p-4 font-semibold w-36">ประเภทธุรกิจ</th>
+                                <th class="p-4 font-semibold w-32">สถานะ</th>
+                                <th class="p-4 font-semibold w-28 sticky right-0 bg-slate-50 dark:bg-[#1A2235] border-l border-slate-200 dark:border-slate-700 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.1)] z-10 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="custTableBody" class="divide-y divide-slate-200 dark:divide-slate-800">
+                            <!-- JS Renders Here -->
+                        </tbody>
+                    </table>
+                </div>
+                 <!-- Pagination 5 Items per Page -->
+                 <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-[#1A2235]">
+                    <span id="custPageInfo" class="text-sm text-slate-500 dark:text-slate-400 font-medium">แสดง 1-5 จาก 0</span>
+                    <div class="flex gap-1" id="custPagination"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================= -->
+        <!-- MODULE 3: FORM CRM                        -->
+        <!-- ========================================= -->
+        <div id="tab-form" class="view-module hidden max-w-4xl mx-auto">
+            <div class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold flex items-center gap-2 text-slate-800 dark:text-white" id="formTitle">
+                        <div class="p-2 bg-brand/10 rounded-xl"><i data-lucide="file-plus" class="text-brand w-6 h-6"></i></div>
+                        บันทึกประวัติการติดต่อใหม่
+                    </h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-2 ml-12">กรอกข้อมูลการเจรจา หรืออัปเดตความคืบหน้าของลูกค้า</p>
+                </div>
+            </div>
+
+            <!-- เพิ่ม autocomplete="off" ที่ตัวฟอร์มหลัก -->
+            <form id="crmForm" class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-8 shadow-xl shadow-slate-200/40 dark:shadow-none" autocomplete="off">
+                <input type="hidden" id="f_id">
+                
+                <div class="bg-slate-50/50 dark:bg-white/[0.02] p-5 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                    <h3 class="text-base font-bold mb-4 flex items-center gap-2 text-slate-800 dark:text-slate-100"><i data-lucide="info" class="w-4 h-4 text-brand"></i> ข้อมูลหลัก</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">วันที่ติดต่อ <span class="text-red-500">*</span></label>
+                            <input type="date" id="f_date" required class="input-premium font-inter" autocomplete="off">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">ชื่อลูกค้า / บริษัท <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <i data-lucide="search" class="icon-wrapper w-4 h-4"></i>
+                                <input type="text" id="f_name" required placeholder="พิมพ์ค้นหาบริษัท..." class="input-premium input-premium-icon" autocomplete="off">
+                            </div>
+                            <div id="f_name_dropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl hidden max-h-60 overflow-y-auto"><ul id="f_name_list" class="py-1"></ul></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50/50 dark:bg-white/[0.02] p-5 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800/50 relative">
+                    <div class="absolute -top-3 left-6 bg-gradient-to-r from-brand to-brand-hover text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-md flex items-center gap-1"><i data-lucide="zap" class="w-3 h-3"></i> รองรับ Auto-fill</div>
+                    <h3 class="text-base font-bold mb-4 mt-2 flex items-center gap-2 text-slate-800 dark:text-slate-100"><i data-lucide="contact" class="w-4 h-4 text-brand"></i> ข้อมูลการติดต่อประสานงาน</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                        <div class="relative">
+                            <label class="block text-xs font-semibold mb-1 text-slate-500">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label>
+                            <i data-lucide="phone" class="icon-wrapper w-4 h-4 text-blue-500"></i>
+                            <input type="tel" id="f_phone" required placeholder="08X-XXX-XXXX" class="input-premium input-premium-icon font-inter" autocomplete="off">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-semibold mb-1 text-slate-500">อีเมลทางการ</label>
+                            <i data-lucide="mail" class="icon-wrapper w-4 h-4 text-amber-500"></i>
+                            <input type="email" id="f_email" placeholder="example@mail.com" class="input-premium input-premium-icon font-inter" autocomplete="off">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-xs font-semibold mb-1 text-slate-500">Line ID / OA</label>
+                            <i data-lucide="message-circle" class="icon-wrapper w-4 h-4 text-[#00B900]"></i>
+                            <input type="text" id="f_line" placeholder="@lineid" class="input-premium input-premium-icon" autocomplete="off">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">ช่องทางการติดต่อ <span class="text-xs font-normal text-slate-500">(เลือกได้มากกว่า 1)</span></label>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            <div class="relative"><input type="checkbox" id="ch_phone" value="โทรศัพท์" class="peer sr-only checkbox-card-input"><label for="ch_phone" class="flex flex-col items-center justify-center p-3 bg-white dark:bg-[#1A2235] border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-brand/50 transition-all shadow-sm"><i data-lucide="phone" class="w-5 h-5 mb-1 text-blue-500"></i><span class="text-xs font-medium">โทรศัพท์</span></label></div>
+                            <div class="relative"><input type="checkbox" id="ch_email" value="อีเมล" class="peer sr-only checkbox-card-input"><label for="ch_email" class="flex flex-col items-center justify-center p-3 bg-white dark:bg-[#1A2235] border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-brand/50 transition-all shadow-sm"><i data-lucide="mail" class="w-5 h-5 mb-1 text-amber-500"></i><span class="text-xs font-medium">อีเมล</span></label></div>
+                            <div class="relative"><input type="checkbox" id="ch_line" value="Line" class="peer sr-only checkbox-card-input"><label for="ch_line" class="flex flex-col items-center justify-center p-3 bg-white dark:bg-[#1A2235] border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-brand/50 transition-all shadow-sm"><i data-lucide="message-circle" class="w-5 h-5 mb-1 text-[#00B900]"></i><span class="text-xs font-medium">Line</span></label></div>
+                            <div class="relative"><input type="checkbox" id="ch_meet" value="เข้าพบ" class="peer sr-only checkbox-card-input"><label for="ch_meet" class="flex flex-col items-center justify-center p-3 bg-white dark:bg-[#1A2235] border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-brand/50 transition-all shadow-sm"><i data-lucide="users" class="w-5 h-5 mb-1 text-purple-500"></i><span class="text-xs font-medium">เข้าพบ</span></label></div>
+                            <div class="relative"><input type="checkbox" id="ch_other" value="อื่นๆ" class="peer sr-only checkbox-card-input"><label for="ch_other" class="flex flex-col items-center justify-center p-3 bg-white dark:bg-[#1A2235] border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-brand/50 transition-all shadow-sm"><i data-lucide="more-horizontal" class="w-5 h-5 mb-1 text-slate-500"></i><span class="text-xs font-medium">อื่นๆ</span></label></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50/50 dark:bg-white/[0.02] p-5 md:p-6 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                    <h3 class="text-base font-bold mb-4 flex items-center gap-2 text-slate-800 dark:text-slate-100"><i data-lucide="file-text" class="w-4 h-4 text-brand"></i> รายละเอียดการเจรจา</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5">
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">สรุปเนื้อหาการสนทนา <span class="text-red-500">*</span></label>
+                            <textarea id="f_details" rows="3" required placeholder="สรุปข้อเสนอแนะ..." class="input-premium resize-none" autocomplete="off"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">เวลาคุยสาย</label>
+                            <div class="relative">
+                                <i data-lucide="clock" class="icon-wrapper w-4 h-4"></i>
+                                <input type="number" id="f_minutes" class="input-premium input-premium-icon pr-12 font-inter" autocomplete="off">
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400">นาที</span>
+                            </div>
+                            <p class="text-[10px] text-orange-500 mt-1.5 font-medium">*เกิน 60 นาทีระบบจะแจ้งเตือน</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">สถานะ <span class="text-red-500">*</span></label>
+                            <select id="f_status" required class="input-premium font-semibold">
+                                <option value="ติดต่อครั้งแรก">ติดต่อครั้งแรก</option>
+                                <option value="รอตัดสินใจ">รอตัดสินใจ</option>
+                                <option value="กำลังเจรจา">กำลังเจรจา</option>
+                                <option value="ปิดการขาย" class="text-emerald-600 dark:text-emerald-400">ปิดการขาย</option>
+                                <option value="ปฏิเสธข้อเสนอ" class="text-red-600 dark:text-red-400">ปฏิเสธข้อเสนอ</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">วันที่ควรติดตามผล</label>
+                            <input type="date" id="f_nextDate" class="input-premium font-inter" autocomplete="off">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">วันที่ส่งเอกสาร</label>
+                            <input type="date" id="f_docDate" class="input-premium font-inter" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="relative">
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">ประเภทธุรกิจ</label>
+                            <i data-lucide="briefcase" class="icon-wrapper w-4 h-4"></i>
+                            <input type="text" id="f_bizType" class="input-premium input-premium-icon" autocomplete="off">
+                        </div>
+                        <div class="relative">
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">หมายเหตุเร่งด่วน</label>
+                            <i data-lucide="pen-tool" class="icon-wrapper w-4 h-4"></i>
+                            <input type="text" id="f_note" class="input-premium input-premium-icon" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">แนบไฟล์เอกสาร <span class="text-xs font-normal text-slate-400">(< 2MB)</span></label>
+                        <input type="file" id="f_file" accept=".pdf,.jpg,.png,.doc,.docx" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20 transition-colors cursor-pointer bg-white dark:bg-[#1A2235] border border-slate-200 dark:border-slate-700 rounded-xl">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="resetForm()" class="px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-[#1A2235] transition font-semibold text-slate-600 dark:text-slate-300">ล้างข้อมูลฟอร์ม</button>
+                    <button type="submit" class="px-8 py-2.5 rounded-xl bg-gradient-to-r from-brand to-brand-hover text-white transition-all font-semibold shadow-lg shadow-brand/30 hover:-translate-y-0.5 flex items-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> บันทึกข้อมูลเข้าระบบ</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Global Floating Action Button -->
+    <button onclick="handleGlobalFabClick()" class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-brand to-brand-hover text-white rounded-full shadow-lg shadow-brand/40 flex items-center justify-center hover:scale-105 z-40 transition-transform"><i data-lucide="plus" class="w-6 h-6"></i></button>
+
+    <!-- ========================================= -->
+    <!-- POP-UP MODALS                             -->
+    <!-- ========================================= -->
+    
+    <!-- Customer Modal (Add / Edit) -->
+    <div id="customerModal" class="fixed inset-0 z-[70] hidden flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeCustomerModal()"></div>
+        <div class="relative w-full max-w-2xl bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200/50 dark:border-slate-800/50 shadow-2xl transform scale-95 opacity-0 transition-all duration-300 max-h-[95vh] flex flex-col" id="customerModalContent">
+            
+            <div class="sticky top-0 z-10 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center rounded-t-[2rem]">
+                <h3 class="text-xl font-bold flex items-center gap-3 text-slate-800 dark:text-white" id="cModalTitle">
+                    <div class="p-2.5 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 rounded-xl border border-blue-500/10">
+                        <i data-lucide="building-2" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    เพิ่มข้อมูลบริษัทใหม่
+                </h3>
+                <button onclick="closeCustomerModal()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="overflow-y-auto p-6 space-y-6">
+                <!-- เพิ่ม autocomplete="off" ที่ฟอร์ม Modal ลูกค้า -->
+                <form id="customerForm" class="space-y-6" autocomplete="off">
+                    <input type="hidden" id="c_id">
+                    
+                    <!-- ข้อมูลองค์กร -->
+                    <div class="bg-slate-50 dark:bg-slate-800/30 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-blue-500"></i> ข้อมูลองค์กร</h4>
+                        <p class="text-[11px] text-slate-500 mb-4 ml-6">ระบุชื่อและรายละเอียดเบื้องต้นของบริษัทหรือลูกค้า</p>
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">ชื่อบริษัทจดทะเบียน <span class="text-red-500">*</span></label>
+                                <i data-lucide="building" class="icon-wrapper w-4 h-4"></i>
+                                <input type="text" id="c_company" required placeholder="บริษัท..." class="input-premium input-premium-icon shadow-sm" autocomplete="off">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="relative">
+                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">ชื่อผู้ประสานงานหลัก <span class="text-red-500">*</span></label>
+                                    <i data-lucide="user" class="icon-wrapper w-4 h-4"></i>
+                                    <input type="text" id="c_contactName" required placeholder="ชื่อ..." class="input-premium input-premium-icon shadow-sm" autocomplete="off">
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">ประเภทอุตสาหกรรม</label>
+                                    <i data-lucide="briefcase" class="icon-wrapper w-4 h-4"></i>
+                                    <input type="text" id="c_biz" placeholder="เช่น Technology" class="input-premium input-premium-icon shadow-sm" autocomplete="off">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ช่องทางการติดต่อ -->
+                    <div class="bg-slate-50 dark:bg-slate-800/30 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2"><i data-lucide="contact" class="w-4 h-4 text-blue-500"></i> ช่องทางการติดต่อ</h4>
+                        <p class="text-[11px] text-slate-500 mb-4 ml-6">ระบุช่องทางการติดต่อ (เบอร์โทรและ Line ID จัดกลุ่มไว้ด้วยกัน)</p>
+                        <div class="space-y-4">
+                            <!-- แถวที่ 1: เบอร์โทร & Line ID -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="relative">
+                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">เบอร์โทรศัพท์ <span class="text-red-500">*</span></label>
+                                    <i data-lucide="phone" class="icon-wrapper w-4 h-4 text-blue-500"></i>
+                                    <input type="tel" id="c_phone" required class="input-premium input-premium-icon font-inter shadow-sm" placeholder="08X-XXX-XXXX" autocomplete="off">
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">Line ID / OA</label>
+                                    <i data-lucide="message-circle" class="icon-wrapper w-4 h-4 text-[#00B900]"></i>
+                                    <input type="text" id="c_line" placeholder="@lineid" class="input-premium input-premium-icon shadow-sm" autocomplete="off">
+                                </div>
+                            </div>
+                            <!-- แถวที่ 2: อีเมล -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="relative">
+                                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">อีเมลทางการ</label>
+                                    <i data-lucide="mail" class="icon-wrapper w-4 h-4 text-amber-500"></i>
+                                    <input type="email" id="c_email" placeholder="mail@example.com" class="input-premium input-premium-icon font-inter shadow-sm" autocomplete="off">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ที่อยู่และสถานะ -->
+                    <div class="bg-slate-50 dark:bg-slate-800/30 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-blue-500"></i> ที่อยู่และสถานะ</h4>
+                        <p class="text-[11px] text-slate-500 mb-4 ml-6">ใช้สำหรับออกเอกสารและตั้งค่าระดับความสัมพันธ์</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">สถานะสัญญาเริ่มต้น</label>
+                                <select id="c_status" class="input-premium font-semibold shadow-sm text-sm dark:bg-[#1A2235]">
+                                    <option value="ลูกค้าใหม่" class="text-blue-600 dark:text-blue-400">ลูกค้าใหม่</option>
+                                    <option value="กำลังเจรจา" class="text-orange-600 dark:text-orange-400">กำลังเจรจา</option>
+                                    <option value="ติดต่อแล้ว" class="text-emerald-600 dark:text-emerald-400">ติดต่อแล้ว</option>
+                                    <option value="ลูกค้าเก่า" class="text-purple-600 dark:text-purple-400">ลูกค้าเก่า</option>
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">ที่อยู่จดทะเบียนหลักภาษี</label>
+                                <textarea id="c_address" rows="3" class="input-premium shadow-sm resize-none" autocomplete="off"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="sticky bottom-0 z-10 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md px-6 py-4 border-t border-slate-100 dark:border-slate-800 rounded-b-[2rem] flex justify-end gap-3">
+                <button type="button" onclick="closeCustomerModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium text-slate-600 dark:text-slate-300">ยกเลิก</button>
+                <button type="button" onclick="document.getElementById('customerForm').requestSubmit()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 flex items-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> บันทึกบริษัท</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div id="deleteConfirmModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white dark:bg-[#121826] rounded-3xl border border-red-500/30 p-6 shadow-[0_0_40px_-10px_rgba(239,68,68,0.3)] transform scale-95 opacity-0 transition-all duration-300" id="deleteConfirmContent">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mb-4 border border-red-200 dark:border-red-500/30 animate-pulse"><i data-lucide="alert-triangle" class="w-8 h-8 text-red-500"></i></div>
+                <h3 class="text-xl font-bold mb-2 text-slate-800 dark:text-white">ยืนยันการลบข้อมูลถาวร?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">ข้อมูลนี้จะถูกลบและไม่สามารถกู้คืนได้ ยืนยันที่จะดำเนินการต่อหรือไม่?</p>
+                <div class="flex gap-3 w-full">
+                    <button onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-[#1A2235] font-semibold text-slate-600 dark:text-slate-300 transition">ยกเลิก</button>
+                    <button onclick="confirmDeleteAction()" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold flex items-center justify-center gap-2 transition"><i data-lucide="trash-2" class="w-4 h-4"></i> ยืนยันลบข้อมูล</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal (File Upload) -->
+    <div id="profileModal" class="fixed inset-0 z-[70] hidden">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeProfileModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white dark:bg-[#121826] rounded-3xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="profileModalContent">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold flex items-center gap-2 text-slate-800 dark:text-white"><div class="p-2 bg-brand/10 rounded-xl"><i data-lucide="settings" class="text-brand w-5 h-5"></i></div> ตั้งค่าโปรไฟล์</h3>
+                <button onclick="closeProfileModal()" class="p-2 hover:bg-slate-100 dark:hover:bg-[#1A2235] rounded-full text-slate-400 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">อัปโหลดรูปโปรไฟล์ <span class="text-[10px] text-slate-400 font-normal">(แนะนำขนาดไฟล์เล็ก)</span></label>
+                    <input type="file" id="p_image_file" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20 bg-white dark:bg-[#1A2235] border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer">
+                </div>
+                <div class="relative">
+                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">ชื่อผู้ใช้ (ในระบบ)</label>
+                    <i data-lucide="user" class="icon-wrapper w-4 h-4"></i>
+                    <input type="text" id="p_name" class="input-premium input-premium-icon" autocomplete="off">
+                </div>
+                <div class="relative">
+                    <label class="block text-xs font-semibold mb-1 text-slate-600 dark:text-slate-400">ตำแหน่งหน้าที่</label>
+                    <i data-lucide="award" class="icon-wrapper w-4 h-4"></i>
+                    <input type="text" id="p_role" class="input-premium input-premium-icon" autocomplete="off">
+                </div>
+                <button onclick="saveProfile()" class="w-full bg-gradient-to-r from-brand to-brand-hover text-white py-3 rounded-xl font-bold mt-4 shadow-lg shadow-brand/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> บันทึกตั้งค่า</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================= -->
+    <!-- CORE SCRIPTS                              -->
+    <!-- ========================================= -->
+    <script>
+        tailwind.config = { 
+            darkMode: 'class', 
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['"Noto Sans Thai"', 'sans-serif'], inter: ['Inter', 'sans-serif'] }, 
+                    colors: { brand: 'rgb(var(--color-brand) / <alpha-value>)', 'brand-hover': 'rgb(var(--color-brand-hover) / <alpha-value>)' } 
+                } 
+            } 
+        };
+        const themeColors = { emerald: { brand: '16 185 129', hover: '5 150 105' }, blue: { brand: '59 130 246', hover: '37 99 235' }, purple: { brand: '139 92 246', hover: '124 58 237' }, rose: { brand: '244 63 94', hover: '225 29 72' }, orange: { brand: '249 115 22', hover: '234 88 12' }, slate: { brand: '100 116 139',hover: '71 85 105' } };
+        const IS_GAS = typeof google !== 'undefined' && typeof google.script !== 'undefined';
+        
+        let crmData = [], custData = [], followupData = [];
+        let currentCrmPage = 1, currentCustPage = 1, currentFollowupPage = 1;
+        const ITEMS_PER_PAGE_CRM = 10, ITEMS_PER_PAGE_CUST = 5;
+        let custSortCol = '', custSortAsc = true, targetDelete = null;
+        let mockDB = { crm: [], cust: [] };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons(); initTheme(); initProfile();
+            
+            if (!IS_GAS) { 
+                document.getElementById('mockModeBadge').classList.remove('hidden'); 
+                generateInitialMockData(); 
+            }
+
+            document.getElementById('crmSearch').addEventListener('input', () => { currentCrmPage = 1; renderCRMTable(); });
+            document.getElementById('crmStatusFilter').addEventListener('change', () => { currentCrmPage = 1; renderCRMTable(); });
+            
+            document.getElementById('custSearch').addEventListener('input', () => { currentCustPage = 1; renderCustTable(); });
+            document.getElementById('custBizFilter').addEventListener('change', () => { currentCustPage = 1; renderCustTable(); });
+            document.getElementById('custStatusFilter').addEventListener('change', () => { currentCustPage = 1; renderCustTable(); });
+            
+            document.getElementById('crmForm').addEventListener('submit', handleCRMSubmit);
+            document.getElementById('customerForm').addEventListener('submit', handleCustomerSubmit);
+
+            setupAutocomplete(); 
+            fetchData();
+        });
+
+        // --- Theme & Profile ---
+        function changeThemeColor(colorKey) { const theme = themeColors[colorKey]; if (!theme) return; document.documentElement.style.setProperty('--color-brand', theme.brand); document.documentElement.style.setProperty('--color-brand-hover', theme.hover); localStorage.setItem('crm_theme_color', colorKey); }
+        function initTheme() { changeThemeColor(localStorage.getItem('crm_theme_color') || 'emerald'); const html = document.documentElement; if ((localStorage.getItem('theme') || 'dark') === 'light') html.classList.remove('dark'); else html.classList.add('dark'); document.getElementById('themeToggle').addEventListener('click', () => { html.classList.toggle('dark'); localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light'); }); }
+        function handleGlobalFabClick() { if (!document.getElementById('tab-customer').classList.contains('hidden')) openCustomerModal(); else switchTab('tab-form'); }
+
+        // --- Autocomplete ---
+        function setupAutocomplete() {
+            const input = document.getElementById('f_name'), dropdown = document.getElementById('f_name_dropdown'), list = document.getElementById('f_name_list');
+            input.addEventListener('input', function() {
+                const val = this.value.toLowerCase().trim(); list.innerHTML = '';
+                if (!val) { dropdown.classList.add('hidden'); return; }
+                renderDropdownList(custData.filter(row => (row[2] && row[2].toLowerCase().includes(val)) || (row[3] && row[3].toLowerCase().includes(val))), list, dropdown);
+            });
+            input.addEventListener('focus', function() { if (this.value.trim() === '' && custData.length > 0) renderDropdownList(custData.slice(0, 10), list, dropdown); else this.dispatchEvent(new Event('input')); });
+            document.addEventListener('click', function(e) { if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.add('hidden'); });
+        }
+        
+        function renderDropdownList(dataArray, listElement, dropdownElement) {
+            listElement.innerHTML = '';
+            if (dataArray.length > 0) {
+                dropdownElement.classList.remove('hidden');
+                dataArray.forEach(row => {
+                    const li = document.createElement('li'); 
+                    li.className = 'px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-[#1A2235] cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors flex flex-col';
+                    li.innerHTML = `<span class="font-bold text-slate-900 dark:text-white">${row[2]}</span><span class="text-xs text-slate-500">ติดต่อ: ${row[3]}</span>`;
+                    li.onclick = () => {
+                        document.getElementById('f_name').value = row[2]; dropdownElement.classList.add('hidden');
+                        try { const c = JSON.parse(row[4]); if(c.phone) document.getElementById('f_phone').value = c.phone; if(c.email) document.getElementById('f_email').value = c.email; if(c.line) document.getElementById('f_line').value = c.line; } catch(e) {}
+                        if(row[6]) document.getElementById('f_bizType').value = row[6];
+                    }; 
+                    listElement.appendChild(li);
+                });
+            } else { 
+                dropdownElement.classList.remove('hidden'); 
+                listElement.innerHTML = `<li class="px-4 py-3 text-sm text-slate-400 text-center italic">ไม่พบประวัติ (ระบบจะสร้างข้อมูลใหม่ให้)</li>`; 
+            }
+        }
+
+        // --- Fetch & Server ---
+        async function runServer(funcName, ...args) { return new Promise((resolve, reject) => { if (IS_GAS) google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[funcName](...args); else setTimeout(() => { try { resolve(mockServerLogic(funcName, args)); } catch(e) { reject(e); } }, 600); }); }
+        
+        async function fetchData() {
+            showLoading(true);
+            try {
+                const [crmRes, custRes] = await Promise.all([runServer('getCRMData'), runServer('getCustomerData')]);
+                crmData = crmRes || []; custData = custRes || [];
+                populateCustBizDropdown(); calculateKPIs(); renderCRMTable(); renderCustTable(); processFollowUpData(); 
+            } catch (error) { showToast('เกิดข้อผิดพลาดในการดึงข้อมูล', 'error'); }
+            showLoading(false);
+        }
+
+        function populateCustBizDropdown() {
+            const bizTypes = [...new Set(custData.map(r => r[6]).filter(b => b && b.trim() !== ''))].sort();
+            const select = document.getElementById('custBizFilter'); const currentVal = select.value;
+            select.innerHTML = '<option value="">ทุกประเภทธุรกิจ</option>' + bizTypes.map(b => `<option value="${b}">${b}</option>`).join(''); select.value = currentVal;
+        }
+
+        // --- Follow Up Logic ---
+        function processFollowUpData() {
+            const today = new Date(); today.setHours(0,0,0,0); followupData = [];
+            let countOverdue = 0, countAging = 0, countSilent = 0;
+            const activeCases = crmData.filter(row => row[9] !== 'ปิดการขาย' && row[9] !== 'ปฏิเสธข้อเสนอ');
+
+            activeCases.forEach(row => {
+                let score = 0; let tags = []; let isOverdue = false;
+                const contactDateStr = row[1]; const docDateStr = row[6]; const nextDateStr = row[8];
+
+                if (nextDateStr) {
+                    const nDate = new Date(nextDateStr); nDate.setHours(0,0,0,0);
+                    if (nDate < today) { isOverdue = true; score += 100; countOverdue++; tags.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 rounded-lg text-xs font-bold animate-pulse"><i data-lucide="calendar-x" class="w-3.5 h-3.5"></i> เลยกำหนดนัด (${nextDateStr})</span>`); }
+                }
+                if (docDateStr) {
+                    const dDate = new Date(docDateStr); dDate.setHours(0,0,0,0);
+                    const diffDays = Math.floor((today - dDate) / 86400000);
+                    if (diffDays >= 5) { score += 50; countAging++; tags.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30 rounded-lg text-xs font-bold"><i data-lucide="file-clock" class="w-3.5 h-3.5"></i> เอกสารค้าง ${diffDays} วัน</span>`); }
+                }
+                if (contactDateStr && !nextDateStr && !isOverdue) {
+                    const cDate = new Date(contactDateStr); cDate.setHours(0,0,0,0);
+                    const diffContact = Math.floor((today - cDate) / 86400000);
+                    if (diffContact >= 7) { score += 25; countSilent++; tags.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/30 rounded-lg text-xs font-bold"><i data-lucide="user-minus" class="w-3.5 h-3.5"></i> ขาดการติดต่อ ${diffContact} วัน</span>`); }
+                }
+                if (score > 0) followupData.push({ rowData: row, score: score, tagsHtml: tags.join(' ') });
+            });
+
+            document.getElementById('kpiFuTotal').textContent = followupData.length; document.getElementById('kpiFuOverdue').textContent = countOverdue; document.getElementById('kpiFuAging').textContent = countAging; document.getElementById('kpiFuSilent').textContent = countSilent;
+            const badge = document.getElementById('badgeFollowUpCount');
+            if (followupData.length > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden');
+            followupData.sort((a, b) => b.score - a.score); renderFollowUpTable();
+        }
+
+        function renderFollowUpTable() {
+            const tbody = document.getElementById('followupTableBody'); const total = followupData.length; const totalPages = Math.ceil(total / ITEMS_PER_PAGE_CRM) || 1;
+            if (currentFollowupPage > totalPages) currentFollowupPage = totalPages; const start = (currentFollowupPage - 1) * ITEMS_PER_PAGE_CRM; const pageData = followupData.slice(start, start + ITEMS_PER_PAGE_CRM);
+
+            tbody.innerHTML = pageData.length === 0 ? `<tr><td colspan="6" class="p-8 text-center text-slate-500">🎉 ยอดเยี่ยม! ไม่มีลูกค้ารายใดที่ต้องติดตามด่วนในขณะนี้</td></tr>` : 
+                pageData.map((item) => {
+                    const r = item.rowData; const id = r[13], lastContact = r[1], name = r[2], details = r[5], status = r[9];
+                    let contactStr = ""; 
+                    try { 
+                        const c = JSON.parse(r[3]); 
+                        if(c.phone) contactStr += `<div class="text-xs font-inter text-slate-600 dark:text-slate-300"><i data-lucide="phone" class="w-3 h-3 inline text-blue-500 mr-1"></i>${c.phone}</div>`; 
+                        if(c.line) contactStr += `<div class="text-xs font-inter text-slate-600 dark:text-slate-300 mt-0.5"><i data-lucide="message-circle" class="w-3 h-3 inline text-[#00B900] mr-1"></i>${c.line}</div>`; 
+                    } catch(e) {}
+                    return `
+                        <tr class="table-row">
+                            <td class="p-4 align-top border-l-4 ${item.score >= 100 ? 'border-rose-500' : (item.score >= 50 ? 'border-orange-500' : 'border-slate-400')}"><div class="flex flex-col gap-1.5 items-start">${item.tagsHtml}</div></td>
+                            <td class="p-4 align-top font-bold text-slate-900 dark:text-white">${name}</td>
+                            <td class="p-4 align-top font-medium text-slate-500 font-inter">${lastContact}</td>
+                            <td class="p-4 align-top"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 mb-1 inline-block">${status}</span><p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2" title="${details}">${details}</p></td>
+                            <td class="p-4 align-top">${contactStr}</td>
+                            <td class="p-4 align-top sticky right-0 bg-slate-50 dark:bg-[#1A2235] border-l border-slate-200 dark:border-slate-700 text-center"><button onclick="editCRM('${id}')" class="px-3 py-1.5 bg-brand hover:bg-brand-hover text-white rounded-lg transition shadow-sm text-xs font-bold flex items-center gap-1 mx-auto"><i data-lucide="external-link" class="w-3 h-3"></i> อัปเดตงาน</button></td>
+                        </tr>
+                    `;
+                }).join('');
+            document.getElementById('followupPageInfo').textContent = `แสดง ${total===0?0:start+1}-${Math.min(start + ITEMS_PER_PAGE_CRM, total)} จาก ${total} รายการด่วน`;
+            renderPagination('followupPagination', totalPages, currentFollowupPage, (p) => { currentFollowupPage = p; renderFollowUpTable(); }); lucide.createIcons();
+        }
+
+        // --- Render CRM ---
+        function calculateKPIs() {
+            document.getElementById('kpiTotal').textContent = crmData.length; document.getElementById('kpiFirst').textContent = crmData.filter(r => r[9] === 'ติดต่อครั้งแรก').length;
+            document.getElementById('kpiNego').textContent = crmData.filter(r => r[9] === 'กำลังเจรจา' || r[9] === 'รอตัดสินใจ').length; document.getElementById('kpiClosed').textContent = crmData.filter(r => r[9] === 'ปิดการขาย').length;
+        }
+
+        function renderCRMTable() {
+            const tbody = document.getElementById('crmTableBody'); const search = document.getElementById('crmSearch').value.toLowerCase(); const statusF = document.getElementById('crmStatusFilter').value;
+            let filtered = crmData.filter(row => { const matchSearch = (row[2] || '').toLowerCase().includes(search) || (row[5] || '').toLowerCase().includes(search); const matchStatus = statusF === "" || row[9] === statusF; return matchSearch && matchStatus; });
+            const total = filtered.length; const totalPages = Math.ceil(total / ITEMS_PER_PAGE_CRM) || 1; if (currentCrmPage > totalPages) currentCrmPage = totalPages;
+            const start = (currentCrmPage - 1) * ITEMS_PER_PAGE_CRM; const pageData = filtered.slice(start, start + ITEMS_PER_PAGE_CRM);
+
+            tbody.innerHTML = pageData.length === 0 ? `<tr><td colspan="7" class="p-8 text-center text-slate-500">ไม่พบข้อมูล</td></tr>` : 
+                pageData.map((row) => {
+                    const id = row[13], date = row[1], name = row[2], details = row[5], note = row[11] || '-', min = parseInt(row[4]) || 0, status = row[9], docDate = row[6], nextDate = row[8], fileUrl = row[12];
+                    let contactHtml = ""; 
+                    try { 
+                        const c = JSON.parse(row[3]); let badges = ""; 
+                        if (c.channels) { c.channels.forEach(ch => { if (ch === 'โทรศัพท์') badges += `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 rounded text-[10px] font-semibold"><i data-lucide="phone" class="w-2.5 h-2.5"></i> โทร</span> `; else if (ch === 'Line') badges += `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-[#00B900]/10 text-[#00B900] rounded text-[10px] font-semibold"><i data-lucide="message-circle" class="w-2.5 h-2.5"></i> Line</span> `; else if (ch === 'อีเมล') badges += `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/30 rounded text-[10px] font-semibold"><i data-lucide="mail" class="w-2.5 h-2.5"></i> เมล</span> `; else badges += `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded text-[10px] font-semibold">${ch}</span> `; }); } 
+                        contactHtml += `<div class="flex flex-wrap gap-1 mb-2">${badges}</div>`; 
+                        if(c.phone) contactHtml += `<div class="text-xs font-inter text-slate-500 mb-0.5">${c.phone}</div>`; 
+                    } catch(e) { contactHtml = row[3]; }
+
+                    let minHtml = min >= 60 ? `<div class="inline-flex items-center gap-1 mt-2 px-2 py-1 bg-orange-500 text-white font-bold rounded shadow-sm"><i data-lucide="flame" class="w-3 h-3 animate-pulse"></i> ${min} นาที</div>` : `<div class="inline-flex items-center gap-1 mt-2 text-xs text-slate-500"><i data-lucide="timer" class="w-3 h-3"></i> ${min} นาที</div>`;
+                    
+                    let docHtml = ""; 
+                    if (docDate) { let diffDays = 0; if (status !== 'ปิดการขาย' && status !== 'ปฏิเสธข้อเสนอ') { const td = new Date(); td.setHours(0,0,0,0); diffDays = Math.floor((td - new Date(docDate)) / 86400000); } if (diffDays >= 5) docHtml = `<div class="text-xs mt-2 font-medium text-orange-500"><i data-lucide="alert-triangle" class="w-3 h-3 inline"></i> เอกสารค้าง ${diffDays} วัน</div>`; else docHtml = `<div class="text-xs mt-2 text-blue-500"><i data-lucide="file-text" class="w-3 h-3 inline"></i> ส่ง: ${docDate}</div>`; }
+                    
+                    let overdueHtml = ""; 
+                    if (nextDate) { const td = new Date(); td.setHours(0,0,0,0); if (new Date(nextDate) < td && status !== 'ปิดการขาย' && status !== 'ปฏิเสธข้อเสนอ') overdueHtml = `<div class="text-xs mt-1 font-bold text-red-500 animate-blink"><i data-lucide="calendar-x" class="w-3 h-3 inline"></i> นัด: ${nextDate} (Overdue)</div>`; else overdueHtml = `<div class="text-xs mt-1 text-slate-500"><i data-lucide="calendar" class="w-3 h-3 inline"></i> นัด: ${nextDate}</div>`; }
+                    
+                    let statusClass = "bg-gray-100 text-gray-700"; 
+                    if (status === 'ปิดการขาย') statusClass = 'bg-emerald-500/10 text-emerald-500'; 
+                    else if (status === 'กำลังเจรจา') statusClass = 'bg-orange-500/10 text-orange-500'; 
+                    else if (status === 'รอตัดสินใจ') statusClass = 'bg-yellow-500/10 text-yellow-600'; 
+                    else if (status === 'ปฏิเสธข้อเสนอ') statusClass = 'bg-red-500/10 text-red-500'; 
+                    else if (status === 'ติดต่อครั้งแรก') statusClass = 'bg-blue-500/10 text-blue-500';
+
+                    return `
+                        <tr class="table-row">
+                            <td class="p-4 align-top"><div class="font-medium font-inter">${date}</div></td>
+                            <td class="p-4 align-top font-bold text-slate-900 dark:text-white">${name}</td>
+                            <td class="p-4 align-top">${contactHtml}</td>
+                            <td class="p-4 align-top"><p class="text-sm text-slate-700 dark:text-slate-300 whitespace-normal break-words leading-relaxed">${details}</p>${minHtml}</td>
+                            <td class="p-4 align-top"><span class="inline-block px-2.5 py-1 rounded-full text-xs font-bold ${statusClass}">${status}</span>${docHtml}${overdueHtml}</td>
+                            <td class="p-4 align-top"><p class="text-sm text-slate-500 whitespace-normal">${note}</p></td>
+                            <td class="p-4 align-top sticky right-0 bg-slate-50 dark:bg-[#1A2235] border-l border-slate-200 dark:border-slate-700 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.1)] z-10 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button onclick="editCRM('${id}')" class="p-2 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition shadow-sm"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                    <button onclick="deleteRecord('crm', '${id}')" class="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition shadow-sm"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                    ${fileUrl ? `<a href="${fileUrl}" target="_blank" class="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg hover:bg-indigo-500 hover:text-white transition shadow-sm"><i data-lucide="external-link" class="w-4 h-4"></i></a>` : ''}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            document.getElementById('crmPageInfo').textContent = `แสดง ${total===0?0:start+1}-${Math.min(start + ITEMS_PER_PAGE_CRM, total)} จาก ${total} รายการ`;
+            renderPagination('crmPagination', totalPages, currentCrmPage, (p) => { currentCrmPage = p; renderCRMTable(); });
+            lucide.createIcons();
+        }
+
+        // --- Render Customer ---
+        function calculateCustKPIs() {
+            document.getElementById('kpiCustTotal').textContent = custData.length; document.getElementById('kpiCustNew').textContent = custData.filter(r => r[7] === 'ลูกค้าใหม่').length;
+            document.getElementById('kpiCustNego').textContent = custData.filter(r => r[7] === 'กำลังเจรจา').length; document.getElementById('kpiCustContacted').textContent = custData.filter(r => r[7] === 'ติดต่อแล้ว').length; document.getElementById('kpiCustOld').textContent = custData.filter(r => r[7] === 'ลูกค้าเก่า').length;
+        }
+
+        function sortCust(col) { if (custSortCol === col) custSortAsc = !custSortAsc; else { custSortCol = col; custSortAsc = true; } renderCustTable(); }
+
+        function renderCustTable() {
+            calculateCustKPIs();
+            const tbody = document.getElementById('custTableBody');
+            const search = document.getElementById('custSearch').value.toLowerCase();
+            const statusF = document.getElementById('custStatusFilter').value;
+            const bizF = document.getElementById('custBizFilter').value;
+
+            // 1. Filter Data
+            let filtered = custData.filter(row => {
+                const matchSearch = (row[2] + " " + row[3] + " " + (row[4] || '')).toLowerCase().includes(search);
+                const matchStatus = statusF === "" || row[7] === statusF;
+                const matchBiz = bizF === "" || row[6] === bizF;
+                return matchSearch && matchStatus && matchBiz;
+            });
+
+            // 2. Sort Data
+            if (custSortCol === 'company') filtered.sort((a, b) => custSortAsc ? a[2].localeCompare(b[2], 'th') : b[2].localeCompare(a[2], 'th'));
+            else if (custSortCol === 'contact') filtered.sort((a, b) => custSortAsc ? a[3].localeCompare(b[3], 'th') : b[3].localeCompare(a[3], 'th'));
+            
+            // 3. Update Sort Icons
+            document.querySelectorAll('#sort-icon-company, #sort-icon-contact').forEach(icon => {
+                icon.setAttribute('data-lucide', 'chevrons-up-down');
+                icon.classList.remove('text-blue-500'); icon.classList.add('text-slate-400');
+            });
+            if (custSortCol) {
+                const icon = document.getElementById(`sort-icon-${custSortCol}`);
+                if(icon) {
+                    icon.setAttribute('data-lucide', custSortAsc ? 'chevron-up' : 'chevron-down');
+                    icon.classList.add('text-blue-500'); icon.classList.remove('text-slate-400');
+                }
+            }
+            lucide.createIcons();
+
+            // 4. Pagination
+            const total = filtered.length; 
+            const totalPages = Math.ceil(total / ITEMS_PER_PAGE_CUST) || 1; 
+            if (currentCustPage > totalPages) currentCustPage = totalPages;
+            const start = (currentCustPage - 1) * ITEMS_PER_PAGE_CUST; 
+            const pageData = filtered.slice(start, start + ITEMS_PER_PAGE_CUST);
+
+            // 5. Render Rows
+            tbody.innerHTML = pageData.length === 0 ? `<tr><td colspan="8" class="p-8 text-center text-slate-500">ไม่พบทะเบียนรายชื่อลูกค้า</td></tr>` : 
+                pageData.map((row, index) => {
+                    const id = row[0], company = row[2], contactName = row[3], addr = row[5] || '-', biz = row[6] || '-', status = row[7];
+                    
+                    let contactStr = ""; 
+                    try { 
+                        const c = JSON.parse(row[4]); 
+                        if(c.phone) contactStr += `<div class="text-xs mt-1 flex items-center gap-1.5 font-inter text-slate-600 dark:text-slate-300"><i data-lucide="phone" class="w-3.5 h-3.5 text-blue-500"></i> ${c.phone}</div>`; 
+                        if(c.email) contactStr += `<div class="text-xs mt-1 flex items-center gap-1.5 font-inter text-slate-600 dark:text-slate-300"><i data-lucide="mail" class="w-3.5 h-3.5 text-amber-500"></i> <span class="truncate w-40" title="${c.email}">${c.email}</span></div>`; 
+                        if(c.line) contactStr += `<div class="text-xs mt-1 flex items-center gap-1.5 font-inter text-slate-600 dark:text-slate-300"><i data-lucide="message-circle" class="w-3.5 h-3.5 text-[#00B900]"></i> ${c.line}</div>`; 
+                    } catch(e) {}
+
+                    let stClass = 'bg-blue-500/10 text-blue-500 border-blue-500/30'; 
+                    if(status === 'กำลังเจรจา') stClass = 'bg-orange-500/10 text-orange-500 border-orange-500/30'; 
+                    else if(status === 'ติดต่อแล้ว') stClass = 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'; 
+                    else if(status === 'ลูกค้าเก่า') stClass = 'bg-purple-500/10 text-purple-500 border-purple-500/30';
+
+                    return `
+                        <tr class="table-row">
+                            <td class="p-4">${start + index + 1}</td>
+                            <td class="p-4 font-bold whitespace-nowrap text-slate-900 dark:text-white">${company}</td>
+                            <td class="p-4 font-medium whitespace-nowrap text-slate-700 dark:text-slate-200">${contactName}</td>
+                            <td class="p-4 py-3">${contactStr}</td>
+                            <td class="p-4">
+                                <div class="css-tooltip w-full">
+                                    <p class="text-xs line-clamp-2 cursor-help whitespace-normal leading-relaxed text-slate-500 dark:text-slate-400">${addr}</p>
+                                    <span class="tooltip-text font-normal">${addr}</span>
+                                </div>
+                            </td>
+                            <td class="p-4"><span class="px-2 py-0.5 bg-slate-100 dark:bg-white/5 rounded-lg text-xs font-semibold">${biz}</span></td>
+                            <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold border ${stClass}">${status}</span></td>
+                            <td class="p-4 sticky right-0 bg-slate-50 dark:bg-[#1A2235] border-l border-slate-200 dark:border-slate-700 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.1)] z-10 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button onclick="editCust('${id}')" class="p-2 bg-blue-500/10 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition shadow-sm" title="แก้ไขลูกค้า"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                    <button onclick="deleteRecord('cust', '${id}')" class="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition shadow-sm" title="ลบข้อมูลลูกค้า"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                
+            document.getElementById('custPageInfo').textContent = `แสดง ${total===0?0:start+1}-${Math.min(start + ITEMS_PER_PAGE_CUST, total)} จาก ${total} บริษัท`;
+            renderPagination('custPagination', totalPages, currentCustPage, (p) => { currentCustPage = p; renderCustTable(); });
+            lucide.createIcons();
+        }
+
+        // --- Event Handlers & API ---
+        async function handleCRMSubmit(e) {
+            e.preventDefault(); showLoading(true);
+            const fi = document.getElementById('f_file'); let fb64 = null, fn = null;
+            if (fi.files.length > 0) { if(fi.files[0].size > 2 * 1024 * 1024) { showLoading(false); Swal.fire('ข้อผิดพลาด', 'ไฟล์เกิน 2MB', 'error'); return; } fb64 = await getBase64(fi.files[0]); fn = fi.files[0].name; }
+            const channels = []; document.querySelectorAll('.checkbox-card-input:checked').forEach(cb => channels.push(cb.value));
+            const payload = {
+                ID: document.getElementById('f_id').value, Timestamp: new Date().toISOString(), 'วันที่ติดต่อ': document.getElementById('f_date').value, 'ชื่อลูกค้า': document.getElementById('f_name').value,
+                'ข้อมูลการติดต่อ (JSON)': JSON.stringify({ phone: document.getElementById('f_phone').value, email: document.getElementById('f_email').value, line: document.getElementById('f_line').value, channels: channels, businessType: document.getElementById('f_bizType').value }),
+                'เวลาคุยสายสะสม': document.getElementById('f_minutes').value || 0, 'รายละเอียดการติดต่อ': document.getElementById('f_details').value, 'วันที่ส่งเอกสาร': document.getElementById('f_docDate').value,
+                'ลักษณะการส่ง': "", 'วันที่ควรติดต่อกลับ': document.getElementById('f_nextDate').value, 'สถานะลูกค้า': document.getElementById('f_status').value,
+                'ระยะเวลารอลูกค้าตอบกลับ': document.getElementById('f_note').value, 'สาเหตุ/หมายเหตุ': document.getElementById('f_note').value, 'ลิงก์ไฟล์แนบ': "", fileBase64: fb64, fileName: fn
+            };
+            try { await runServer('saveCRMRecord', payload); showToast('บันทึกข้อมูลสำเร็จ'); resetForm(); await fetchData(); switchTab('tab-crm'); } catch (err) { Swal.fire('เกิดข้อผิดพลาด', err.toString(), 'error'); } showLoading(false);
+        }
+
+        async function handleCustomerSubmit(e) {
+            e.preventDefault(); showLoading(true);
+            const payload = {
+                ID: document.getElementById('c_id').value, Timestamp: new Date().toISOString(), 'ชื่อบริษัท': document.getElementById('c_company').value, 'ชื่อผู้ติดต่อ': document.getElementById('c_contactName').value,
+                'ข้อมูลติดต่อ (JSON)': JSON.stringify({ phone: document.getElementById('c_phone').value, email: document.getElementById('c_email').value, line: document.getElementById('c_line').value }),
+                'ที่อยู่': document.getElementById('c_address').value, 'ประเภทธุรกิจ': document.getElementById('c_biz').value, 'สถานะลูกค้า': document.getElementById('c_status').value
+            };
+            try { await runServer('saveCustomerRecord', payload); showToast('บันทึกข้อมูลบริษัทสำเร็จ'); closeCustomerModal(); await fetchData(); } catch (err) { Swal.fire('ข้อผิดพลาด', err.toString(), 'error'); } showLoading(false);
+        }
+
+        function deleteRecord(type, id) { targetDelete = { type, id }; const modal = document.getElementById('deleteConfirmModal'); const content = document.getElementById('deleteConfirmContent'); modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); }, 10); }
+        function closeDeleteModal() { const content = document.getElementById('deleteConfirmContent'); content.classList.add('scale-95', 'opacity-0'); setTimeout(() => { document.getElementById('deleteConfirmModal').classList.add('hidden'); targetDelete = null; }, 300); }
+        async function confirmDeleteAction() { if (!targetDelete) return; const { type, id } = targetDelete; closeDeleteModal(); showLoading(true); try { const sheetName = type === 'crm' ? 'CRM_Data' : 'CustomerList'; await runServer('deleteRecord', sheetName, id, type === 'crm' ? 13 : 0); showToast('ลบสำเร็จแล้ว'); await fetchData(); } catch (err) { Swal.fire('ข้อผิดพลาด', err.toString(), 'error'); } showLoading(false); }
+
+        function getBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); }); }
+        function convertToInputDate(dateStr) { if(!dateStr) return ""; try { const d = new Date(dateStr); return isNaN(d) ? "" : d.toISOString().split('T')[0]; } catch { return ""; } }
+        
+        function resetForm() { document.getElementById('crmForm').reset(); document.getElementById('f_id').value = ""; document.getElementById('f_date').value = new Date().toISOString().split('T')[0]; }
+
+        function editCRM(id) {
+            const row = crmData.find(r => r[13] === id); if(!row) return;
+            document.getElementById('f_id').value = id; document.getElementById('f_date').value = convertToInputDate(row[1]); document.getElementById('f_name').value = row[2]; document.getElementById('f_minutes').value = row[4]; document.getElementById('f_details').value = row[5]; document.getElementById('f_docDate').value = convertToInputDate(row[6]); document.getElementById('f_nextDate').value = convertToInputDate(row[8]); document.getElementById('f_status').value = row[9]; document.getElementById('f_note').value = row[11] || row[10];
+            try { const c = JSON.parse(row[3]); document.getElementById('f_phone').value = c.phone || ''; document.getElementById('f_email').value = c.email || ''; document.getElementById('f_line').value = c.line || ''; document.getElementById('f_bizType').value = c.businessType || ''; document.querySelectorAll('.checkbox-card-input').forEach(cb => cb.checked = false); if(c.channels) c.channels.forEach(ch => { const el = document.querySelector(`.checkbox-card-input[value="${ch}"]`); if(el) el.checked = true; }); } catch(e) {}
+            switchTab('tab-form');
+        }
+
+        function editCust(id) {
+            const row = custData.find(r => r[0] === id); if(!row) return;
+            document.getElementById('cModalTitle').innerHTML = `<div class="p-2.5 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 rounded-xl border border-blue-500/10"><i data-lucide="edit" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i></div> แก้ไขข้อมูลบริษัท`;
+            document.getElementById('c_id').value = id; document.getElementById('c_company').value = row[2]; document.getElementById('c_contactName').value = row[3]; document.getElementById('c_address').value = row[5]; document.getElementById('c_biz').value = row[6]; document.getElementById('c_status').value = row[7];
+            try { const c = JSON.parse(row[4]); document.getElementById('c_phone').value = c.phone || ''; document.getElementById('c_email').value = c.email || ''; document.getElementById('c_line').value = c.line || ''; } catch(e) {}
+            const modal = document.getElementById('customerModal'); const content = document.getElementById('customerModalContent'); modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); lucide.createIcons(); }, 10);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-module').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('border-brand', 'text-brand'); el.classList.add('border-transparent', 'text-slate-500'); });
+            document.getElementById(tabId).classList.remove('hidden');
+            let btn = document.getElementById(`btn-${tabId}`); if(btn) { btn.classList.remove('border-transparent', 'text-slate-500'); btn.classList.add('border-brand', 'text-brand'); }
+        }
+
+        function openCustomerModal() { document.getElementById('customerForm').reset(); document.getElementById('c_id').value = ""; document.getElementById('cModalTitle').innerHTML = `<div class="p-2.5 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 rounded-xl border border-blue-500/10"><i data-lucide="building-2" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i></div> เพิ่มข้อมูลบริษัทใหม่`; const modal = document.getElementById('customerModal'); const content = document.getElementById('customerModalContent'); modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); lucide.createIcons(); }, 10); }
+        function closeCustomerModal() { const content = document.getElementById('customerModalContent'); content.classList.add('scale-95', 'opacity-0'); setTimeout(() => { document.getElementById('customerModal').classList.add('hidden'); }, 300); }
+
+        function openProfileModal() { 
+            document.getElementById('p_name').value = document.getElementById('profileName').textContent; 
+            document.getElementById('p_role').value = document.getElementById('profileRole').textContent; 
+            document.getElementById('p_image_file').value = ''; // เคลียร์ไฟล์เก่า
+            const modal = document.getElementById('profileModal'); const content = document.getElementById('profileModalContent'); modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); }, 10); 
+        }
+        function closeProfileModal() { const content = document.getElementById('profileModalContent'); content.classList.add('scale-95', 'opacity-0'); setTimeout(() => { document.getElementById('profileModal').classList.add('hidden'); }, 300); }
+        
+        async function saveProfile() { 
+            localStorage.setItem('pName', document.getElementById('p_name').value); 
+            localStorage.setItem('pRole', document.getElementById('p_role').value); 
+            
+            const fileInput = document.getElementById('p_image_file');
+            if (fileInput.files.length > 0) {
+                try {
+                    const base64Image = await getBase64(fileInput.files[0]);
+                    localStorage.setItem('pImage', base64Image);
+                } catch (e) {
+                    console.error("Error saving image:", e);
+                }
+            }
+
+            initProfile(); 
+            closeProfileModal(); 
+            showToast('บันทึกโปรไฟล์เรียบร้อยแล้ว'); 
+        }
+
+        function initProfile() { 
+            const name = localStorage.getItem('pName') || 'ผู้จัดการ ฝ่ายขาย'; 
+            const role = localStorage.getItem('pRole') || 'Senior Sales Director'; 
+            const imgUrl = localStorage.getItem('pImage') || ''; 
+            
+            document.getElementById('profileName').textContent = name; 
+            document.getElementById('profileRole').textContent = role; 
+            
+            const imgEl = document.getElementById('profileImage'); 
+            const avatarEl = document.getElementById('profileAvatar'); 
+            
+            if (imgUrl) { 
+                imgEl.src = imgUrl; 
+                imgEl.classList.remove('hidden'); 
+                avatarEl.classList.add('hidden'); 
+            } else { 
+                imgEl.classList.add('hidden'); 
+                avatarEl.classList.remove('hidden'); 
+                avatarEl.textContent = name.substring(0, 2).toUpperCase(); 
+            } 
+        }
+
+        function renderPagination(containerId, totalPages, currentPage, callback) {
+            const container = document.getElementById(containerId); let html = '';
+            html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="window.${containerId}Click(${currentPage - 1})" class="px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-sm disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-[#1A2235]"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>`;
+            for(let i=1; i<=totalPages; i++) { if(i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { html += `<button onclick="window.${containerId}Click(${i})" class="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded text-sm ${i === currentPage ? 'bg-brand text-white border-brand' : 'hover:bg-slate-100 dark:hover:bg-[#1A2235]'}">${i}</button>`; } else if(i === currentPage - 2 || i === currentPage + 2) { html += `<span class="px-2 py-1">...</span>`; } }
+            html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="window.${containerId}Click(${currentPage + 1})" class="px-2 py-1 border border-slate-200 dark:border-slate-700 rounded text-sm disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-[#1A2235]"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>`;
+            container.innerHTML = html; window[`${containerId}Click`] = callback; lucide.createIcons();
+        }
+
+        function showLoading(show) { document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none'; }
+        function showToast(title, icon = 'success') { Swal.fire({ toast: true, position: 'top-end', icon: icon, title: title, showConfirmButton: false, timer: 3000, timerProgressBar: true }); }
+
+        // MOCK DATABASE & SERVER LOGIC
+        function generateInitialMockData() {
+            const td = new Date(); const dM = (days) => { let d = new Date(td); d.setDate(td.getDate() - days); return d.toISOString().split('T')[0]; };
+            mockDB.crm = [
+                [ new Date().toISOString(), dM(0), "บริษัท อัลฟ่า เทค จำกัด", JSON.stringify({ channels: ['โทรศัพท์', 'อีเมล'], phone: "081-111-1111", email: "contact@alpha.com" }), 45, "สรุปข้อตกลงและเงื่อนไขการให้บริการ ลูกค้ายินยอมเซ็นสัญญาตามใบเสนอราคาประจำปีเรียบร้อยแล้ว", dM(1), "", "", "ปิดการขาย", "", "ไม่มีปัญหาใดๆ", "https://drive.google.com", "ID_1" ],
+                [ new Date().toISOString(), dM(2), "บจก. เบต้า คอร์ปอเรชั่น", JSON.stringify({ channels: ['โทรศัพท์'], phone: "082-222-2222" }), 90, "นัดหมายสาธิตระบบ", "", "", dM(-1), "กำลังเจรจา", "", "", "", "ID_2" ],
+                [ new Date().toISOString(), dM(8), "บริษัท แกมม่า โลจิสติกส์", JSON.stringify({ channels: ['อีเมล'], email: "info@gamma.com" }), 20, "ส่งเอกสารใบเสนอราคา", dM(7), "", "", "รอตัดสินใจ", "", "", "", "ID_3" ],
+                [ new Date().toISOString(), dM(10), "เดลต้า รีเทล กรุ๊ป", JSON.stringify({ channels: ['โทรศัพท์'], phone: "084-444-4444" }), 15, "โทรไปเสนอสินค้า", "", "", dM(2), "ติดต่อครั้งแรก", "", "", "", "ID_4" ],
+            ];
+            const ind = ['Technology', 'Retail', 'Healthcare']; const cSt = ['ลูกค้าใหม่', 'กำลังเจรจา', 'ติดต่อแล้ว', 'ลูกค้าเก่า'];
+            for(let i=5; i>=1; i--) {
+                mockDB.cust.push([
+                    `UUID-${i}`, new Date().toISOString(), `บริษัท คู่ค้าจำลอง ${i} จำกัด`, `คุณสมศรี มีใจ ${i}`, 
+                    JSON.stringify({ phone: `082-000-000${i}`, email: `contact${i}@company.com`, line: `@company${i}` }), 
+                    `123/${i} อาคารจำลอง แขวงบางซื่อ เขตบางซื่อ กรุงเทพมหานคร 10800`, ind[i % ind.length], cSt[i % cSt.length]
+                ]);
+            }
+        }
+        function mockServerLogic(fn, args) {
+            if (fn === 'getCRMData') return [...mockDB.crm]; if (fn === 'getCustomerData') return [...mockDB.cust];
+            if (fn === 'saveCRMRecord') { const d = args[0]; const isU = !!d.ID; const id = d.ID || crypto.randomUUID(); const row = [d.Timestamp || new Date().toISOString(), d['วันที่ติดต่อ'], d['ชื่อลูกค้า'], d['ข้อมูลการติดต่อ (JSON)'], d['เวลาคุยสายสะสม'], d['รายละเอียดการติดต่อ'], d['วันที่ส่งเอกสาร'], d['ลักษณะการส่ง'], d['วันที่ควรติดต่อกลับ'], d['สถานะลูกค้า'], d['ระยะเวลารอลูกค้าตอบกลับ'], d['สาเหตุ/หมายเหตุ'], d['ลิงก์ไฟล์แนบ'] || "", id]; if (isU) { const idx = mockDB.crm.findIndex(r => r[13] === id); if(idx>-1) mockDB.crm[idx] = row; } else mockDB.crm.unshift(row); return { status: 'success', id }; }
+            if (fn === 'saveCustomerRecord') { const d = args[0]; const isU = !!d.ID; const id = d.ID || crypto.randomUUID(); const row = [id, d.Timestamp || new Date().toISOString(), d['ชื่อบริษัท'], d['ชื่อผู้ติดต่อ'], d['ข้อมูลติดต่อ (JSON)'], d['ที่อยู่'], d['ประเภทธุรกิจ'], d['สถานะลูกค้า']]; if (isU) { const idx = mockDB.cust.findIndex(r => r[0] === id); if(idx>-1) mockDB.cust[idx] = row; } else mockDB.cust.unshift(row); return { status: 'success', id }; }
+            if (fn === 'deleteRecord') { const sheet = args[0]; const id = args[1]; if (sheet === 'CRM_Data' || sheet === 'crm') mockDB.crm = mockDB.crm.filter(r => r[13] !== id); else mockDB.cust = mockDB.cust.filter(r => r[0] !== id); return { status: 'success' }; }
+        }
+    </script>
+</body>
+</html>
