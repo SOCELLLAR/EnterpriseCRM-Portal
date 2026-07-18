@@ -70,7 +70,7 @@
         .table-row:hover { background-color: rgba(255,255,255,0.02); }
         .light .table-row:hover { background-color: rgba(0,0,0,0.02); }
 
-        /* Custom Input Styling (Form Redesign) */
+        /* Custom Input Styling */
         .input-premium {
             width: 100%;
             background-color: #ffffff;
@@ -94,7 +94,6 @@
             box-shadow: 0 0 0 4px rgba(var(--color-brand), 0.15);
         }
 
-        /* Input with icon left */
         .input-premium-icon { padding-left: 2.5rem; }
         .icon-wrapper { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; }
         .dark .icon-wrapper { color: #64748b; }
@@ -114,7 +113,7 @@
         </div>
     </div>
 
-    <!-- 1. Top Navigation Bar -->
+    <!-- 1. Top Navigation Bar (Glassmorphism) -->
     <nav class="sticky top-0 z-40 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-md transition-all duration-300">
         <div class="px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -152,6 +151,7 @@
                     <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
                 </button>
 
+                <!-- Separator -->
                 <div class="h-6 w-px bg-slate-200 dark:bg-slate-700 transition-colors"></div>
 
                 <!-- Admin Profile -->
@@ -221,7 +221,7 @@
                         <p id="kpiTotal" class="text-3xl font-bold font-inter text-slate-800 dark:text-white">0</p>
                         <span class="text-xs text-slate-400">รายการ</span>
                     </div>
-                    <i data-lucide="layers" class="absolute -right-6 -bottom-6 w-24 h-24 text-slate-500/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"></i>
+                    <i data-lucide="layers" class="absolute -right-6 -bottom-6 w-24 h-24 text-slate-500/5 group-hover:scale-110 transition-all duration-500"></i>
                 </div>
                 <!-- KPI 2 -->
                 <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-blue-500/40 transition-all duration-300 shadow-sm">
@@ -236,7 +236,7 @@
                         <p id="kpiFirst" class="text-3xl font-bold font-inter text-blue-500">0</p>
                         <span class="text-xs text-slate-400">ครั้ง</span>
                     </div>
-                    <i data-lucide="user-plus" class="absolute -right-6 -bottom-6 w-24 h-24 text-blue-500/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"></i>
+                    <i data-lucide="user-plus" class="absolute -right-6 -bottom-6 w-24 h-24 text-blue-500/5 group-hover:scale-110 transition-all duration-500"></i>
                 </div>
                 <!-- KPI 3 -->
                 <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-orange-500/40 transition-all duration-300 shadow-sm">
@@ -251,7 +251,7 @@
                         <p id="kpiNego" class="text-3xl font-bold font-inter text-orange-500">0</p>
                         <span class="text-xs text-slate-400">ราย</span>
                     </div>
-                    <i data-lucide="messages-square" class="absolute -right-6 -bottom-6 w-24 h-24 text-orange-500/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"></i>
+                    <i data-lucide="messages-square" class="absolute -right-6 -bottom-6 w-24 h-24 text-orange-500/5 group-hover:scale-110 transition-all duration-500"></i>
                 </div>
                 <!-- KPI 4 -->
                 <div class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 relative overflow-hidden group hover:border-brand/40 transition-all duration-300 shadow-sm">
@@ -266,7 +266,7 @@
                         <p id="kpiClosed" class="text-3xl font-bold font-inter text-brand">0</p>
                         <span class="text-xs text-slate-400 font-inter">Success</span>
                     </div>
-                    <i data-lucide="check-circle-2" class="absolute -right-6 -bottom-6 w-24 h-24 text-brand/5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"></i>
+                    <i data-lucide="check-circle-2" class="absolute -right-6 -bottom-6 w-24 h-24 text-brand/5 group-hover:scale-110 transition-all duration-500"></i>
                 </div>
             </div>
 
@@ -549,8 +549,7 @@
                         </tbody>
                     </table>
                 </div>
-                 <!-- Pagination 5 Items per Page -->
-                 <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-[#1A2235]">
+                <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-[#1A2235]">
                     <span id="custPageInfo" class="text-sm text-slate-500 dark:text-slate-400 font-medium">แสดง 1-5 จาก 0</span>
                     <div class="flex gap-1" id="custPagination"></div>
                 </div>
@@ -571,7 +570,6 @@
                 </div>
             </div>
 
-            <!-- เพิ่ม autocomplete="off" ที่ตัวฟอร์มหลัก -->
             <form id="crmForm" class="bg-white dark:bg-[#121826] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-8 shadow-xl shadow-slate-200/40 dark:shadow-none" autocomplete="off">
                 <input type="hidden" id="f_id">
                 
@@ -586,7 +584,7 @@
                             <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">ชื่อลูกค้า / บริษัท <span class="text-red-500">*</span></label>
                             <div class="relative">
                                 <i data-lucide="search" class="icon-wrapper w-4 h-4"></i>
-                                <input type="text" id="f_name" required placeholder="พิมพ์ค้นหาบริษัท..." class="input-premium input-premium-icon" autocomplete="off">
+                                <input type="text" id="f_name" required autocomplete="off" placeholder="พิมพ์ค้นหาบริษัท..." class="input-premium input-premium-icon" autocomplete="off">
                             </div>
                             <div id="f_name_dropdown" class="absolute z-50 w-full mt-1 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl hidden max-h-60 overflow-y-auto"><ul id="f_name_list" class="py-1"></ul></div>
                         </div>
@@ -856,8 +854,14 @@
                 } 
             } 
         };
+        
+        // ==========================================
+        // 🔴 นำ Web App URL ของคุณมาใส่ตรงนี้
+        // ==========================================
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzjatl9j41zRrnrNFWqjHPZJor1rs5mTqUAoApwwtpfGg1ssKdPhG5_kVR_h4Zc3TxE/exec';
+        const IS_GAS = false; // ปรับเป็น false เพื่อให้ระบบดึงข้อมูลจาก API แทน google.script.run
+        
         const themeColors = { emerald: { brand: '16 185 129', hover: '5 150 105' }, blue: { brand: '59 130 246', hover: '37 99 235' }, purple: { brand: '139 92 246', hover: '124 58 237' }, rose: { brand: '244 63 94', hover: '225 29 72' }, orange: { brand: '249 115 22', hover: '234 88 12' }, slate: { brand: '100 116 139',hover: '71 85 105' } };
-        const IS_GAS = typeof google !== 'undefined' && typeof google.script !== 'undefined';
         
         let crmData = [], custData = [], followupData = [];
         let currentCrmPage = 1, currentCustPage = 1, currentFollowupPage = 1;
@@ -868,7 +872,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); initTheme(); initProfile();
             
-            if (!IS_GAS) { 
+            // หากไม่ได้ใส่ URL ให้ใช้งาน Mock Mode
+            if (GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbzjatl9j41zRrnrNFWqjHPZJor1rs5mTqUAoApwwtpfGg1ssKdPhG5_kVR_h4Zc3TxE/exec' || GAS_WEB_APP_URL === '') { 
                 document.getElementById('mockModeBadge').classList.remove('hidden'); 
                 generateInitialMockData(); 
             }
@@ -925,8 +930,38 @@
             }
         }
 
-        // --- Fetch & Server ---
-        async function runServer(funcName, ...args) { return new Promise((resolve, reject) => { if (IS_GAS) google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[funcName](...args); else setTimeout(() => { try { resolve(mockServerLogic(funcName, args)); } catch(e) { reject(e); } }, 600); }); }
+        // --- Fetch & Server (API Communication) ---
+        async function runServer(funcName, ...args) { 
+            // เช็คว่ามีการใส่ URL ของ Web App แล้วหรือยัง
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== 'https://script.google.com/macros/s/AKfycbzjatl9j41zRrnrNFWqjHPZJor1rs5mTqUAoApwwtpfGg1ssKdPhG5_kVR_h4Zc3TxE/exec') {
+                try {
+                    // ใช้ fetch ยิง POST Request ไปที่ Google Apps Script API
+                    const response = await fetch(GAS_WEB_APP_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: funcName, args: args })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        return result.data;
+                    } else {
+                        throw new Error(result.message || 'เกิดข้อผิดพลาดจากเซิร์ฟเวอร์');
+                    }
+                } catch (error) {
+                    console.error("API Error:", error);
+                    throw error;
+                }
+            } else {
+                // หากยังไม่ได้ใส่ URL ให้รัน Mock Mode
+                return new Promise((resolve, reject) => { 
+                    setTimeout(() => { 
+                        try { resolve(mockServerLogic(funcName, args)); } 
+                        catch(e) { reject(e); } 
+                    }, 600); 
+                }); 
+            }
+        }
         
         async function fetchData() {
             showLoading(true);
@@ -934,7 +969,7 @@
                 const [crmRes, custRes] = await Promise.all([runServer('getCRMData'), runServer('getCustomerData')]);
                 crmData = crmRes || []; custData = custRes || [];
                 populateCustBizDropdown(); calculateKPIs(); renderCRMTable(); renderCustTable(); processFollowUpData(); 
-            } catch (error) { showToast('เกิดข้อผิดพลาดในการดึงข้อมูล', 'error'); }
+            } catch (error) { showToast('เกิดข้อผิดพลาดในการดึงข้อมูล (ตรวจสอบ URL)', 'error'); }
             showLoading(false);
         }
 
