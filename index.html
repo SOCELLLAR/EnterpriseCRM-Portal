@@ -873,7 +873,7 @@
             lucide.createIcons(); initTheme(); initProfile();
             
             // หากไม่ได้ใส่ URL ให้ใช้งาน Mock Mode
-            if (GAS_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbzjatl9j41zRrnrNFWqjHPZJor1rs5mTqUAoApwwtpfGg1ssKdPhG5_kVR_h4Zc3TxE/exec' || GAS_WEB_APP_URL === '') { 
+            if (GAS_WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE' || GAS_WEB_APP_URL === '') { 
                 document.getElementById('mockModeBadge').classList.remove('hidden'); 
                 generateInitialMockData(); 
             }
@@ -933,7 +933,7 @@
         // --- Fetch & Server (API Communication) ---
         async function runServer(funcName, ...args) { 
             // เช็คว่ามีการใส่ URL ของ Web App แล้วหรือยัง
-            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== 'https://script.google.com/macros/s/AKfycbzjatl9j41zRrnrNFWqjHPZJor1rs5mTqUAoApwwtpfGg1ssKdPhG5_kVR_h4Zc3TxE/exec') {
+            if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== 'YOUR_WEB_APP_URL_HERE') {
                 try {
                     // ใช้ fetch ยิง POST Request ไปที่ Google Apps Script API
                     const response = await fetch(GAS_WEB_APP_URL, {
